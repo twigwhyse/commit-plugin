@@ -14,8 +14,9 @@
   "contributes": {
     "commands": [
       {
-        "command": "infofe-commit.helloWorld",
-        "title": "Hello World"
+        "command": "infofe-commit.commit",
+        "title": "Infofe: Commit",
+        "icon": "$(git-commit)"
       }
     ]
   },
