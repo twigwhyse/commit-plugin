@@ -64,7 +64,7 @@ export class Branches {
     }
   }
 
-  autoCommitAtCurrentBranch(msg: string) {
+  autoCommitAtCurrentBranch(msg: string): { commitMessage: string; hash: string } | null {
     if (!this.git.hasStaged()) {
       this.git.addAll();
     }
@@ -76,5 +76,7 @@ export class Branches {
       break;
     }
     this.git.commit(msg);
+    const hash = this.git.headCommitHash();
+    return { commitMessage: msg, hash };
   }
 }

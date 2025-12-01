@@ -17,16 +17,15 @@ const CONTENT_TYPE_MAP: TypeMap = {
   [CONTENT_ID.modify]: ['[modify]', '修改', 'modify '],
 };
 
-export function cmContent(br: Branches, content: string) {
+export function cmContent(br: Branches, content: string): { commitMessage: string; hash: string } | null {
   if (content.startsWith('[version]')) {
-    br.autoCommitAtCurrentBranch(content);
-    return;
+    return br.autoCommitAtCurrentBranch(content);
   }
 
   const [cmd, value] = splitType(content, CONTENT_TYPE_MAP);
   if (cmd) {
-    br.autoCommitAtCurrentBranch(`[${cmd}] ${value}`);
+    return br.autoCommitAtCurrentBranch(`[${cmd}] ${value}`);
   } else {
-    br.autoCommitAtCurrentBranch(content);
+    return br.autoCommitAtCurrentBranch(content);
   }
 }
