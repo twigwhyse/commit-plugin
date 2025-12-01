@@ -5,12 +5,14 @@ export const CMD_ID = {
   create: 'create',
   delete: 'delete',
   reset: 'reset',
+  sprintBranch: 'sprintBranch',
 };
 
 export const CMD_MAP = {
   [CMD_ID.create]: ['create ', 'cr '],
   [CMD_ID.delete]: ['delete ', 'dl '],
   [CMD_ID.reset]: ['reset ', 'rs '],
+  [CMD_ID.sprintBranch]: ['sprint ', 'sp '],
 };
 
 export function getMatchCMD(input: string) {

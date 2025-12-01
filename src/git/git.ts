@@ -27,9 +27,17 @@ export class Git {
   
   // 获取所有分支
   getAllBranches = () => {
-    return this.run('git branch -a').split('\n').map(branch => 
-      branch.replace(/^\*?\s*/, '').replace(/^remotes\/origin\//, '').trim()
-    ).filter(branch => branch && !branch.startsWith('HEAD'));
+    return this.run('git branch -a')
+      .split('\n')
+      .map(branch => branch.replace(/^\*?\s*/, '').replace(/^remotes\/origin\//, '').trim())
+      .filter(branch => branch && !branch.startsWith('HEAD'));
+  };
+
+  getBranchesByFixed = (prefix: string, postfix?: string) => {
+    return this.run(`git branch --list ${prefix}${postfix ? `*${postfix}` : '*'}`)
+      .split('\n')
+      .map(branch => branch.replace(/^\*?\s*/, '').replace(/^remotes\/origin\//, '').trim())
+      .filter(branch => branch && !branch.startsWith('HEAD'));
   };
   
   // 获取本地分支
@@ -47,6 +55,10 @@ export class Git {
 
   checkoutBranch = (v: string, isForce = false) => {
     this.logRun(`git checkout -${isForce ? 'B' : 'b'} ${v}`);
+  };
+
+  checkoutBranchFrom = (from: string, to: string) => {
+    this.logRun(`git checkout -b ${to} ${from}`);
   };
 
   deleteBranch = (v: string) => {
