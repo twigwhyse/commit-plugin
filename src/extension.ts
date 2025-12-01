@@ -1,82 +1,106 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { cmContent } from './commit/cm-content';
+import { createBranch, getAvailableBranches, deleteCurrentBranch, isBranchName } from './commit/cm-branch';
+import { Branches } from './git/branches';
+import { Git } from './git/git';
+import { CMD_ID, CMD_MAP, getMatchCMD } from './commit/cm-ids';
+import { cmReset } from './commit/cm-reset';
 
-const execAsync = promisify(exec);
-
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "infofe-commit" is now active!');
-
-	// 注册提交 Commit 命令
 	const commitCommand = vscode.commands.registerCommand('infofe-commit.commit', async () => {
 		await showCommitInput();
 	});
-
 	context.subscriptions.push(commitCommand);
+}
+
+type CommitCommand = {
+	id: string;
+	label: string;
+	value: string;
+}
+
+async function getCommitCommand(input: string): Promise<CommitCommand | undefined> {
+	const str = input.trim();
+	if (!str) {
+		const selectedCommand = await vscode.window.showQuickPick<CommitCommand>(
+			[	
+				{ id: CMD_ID.reset, label: '撤销提交 (reset, rs)', value: '' },
+				{ id: CMD_ID.create, label: '创建分支 (create, cr)', value: '' },
+				{ id: CMD_ID.delete, label: '删除当前分支 (delete, dl)', value: '' }, 
+			],
+			{
+				placeHolder: '请选择要执行的命令',
+				ignoreFocusOut: true,
+			}
+		);
+		return selectedCommand;
+	}
+	
+	const [cmd, value] = getMatchCMD(str);
+	return {
+		id: cmd || CMD_ID.commit,
+		label: cmd || '提交',
+		value,
+	};
+}
+
+async function getValue(defaultValue: string, prompt: string): Promise<string> {
+	if (defaultValue) {
+		return defaultValue;
+	}
+	return await vscode.window.showInputBox({
+		prompt: prompt,
+		ignoreFocusOut: true,
+	}) ?? '';
 }
 
 /**
  * 显示 commit 输入框并提交
  */
 async function showCommitInput(): Promise<void> {
-	// 显示输入框
-	const commitMessage = await vscode.window.showInputBox({
-		prompt: '请输入 Commit 消息',
-		placeHolder: '例如: feat: 添加新功能',
-		ignoreFocusOut: true,
-		validateInput: (value) => {
-			if (!value || value.trim() === '') {
-				return 'Commit 消息不能为空';
-			}
-			return null;
-		}
-	});
-
-	// 如果用户取消输入，直接返回
-	if (!commitMessage) {
+	// 获取当前工作区路径
+	const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+	if (!workspaceFolder) {
+		vscode.window.showErrorMessage('未找到工作区');
 		return;
 	}
 
-	// 执行 git commit
-	await executeCommit(commitMessage.trim());
-}
+	const workspacePath = workspaceFolder.uri.fsPath;
+	const git = new Git();
+	git.setCWD(workspacePath);
+	const br = new Branches(git);
 
-/**
- * 执行 git commit 命令
- */
-async function executeCommit(commitMessage: string): Promise<void> {
-	try {
-		// 获取当前工作区路径
-		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-		if (!workspaceFolder) {
-			vscode.window.showErrorMessage('未找到工作区');
-			return;
+	// 显示输入框
+	const commitMessage = await vscode.window.showInputBox({
+		prompt: '请输入提交指令，直接回车进入命令选择模式',
+		ignoreFocusOut: true,
+	});
+
+	if (commitMessage === undefined) {return;}
+	const cmd = await getCommitCommand(commitMessage);
+	if (!cmd) {return;}
+	if (cmd.id === CMD_ID.commit) {
+		if (isBranchName(cmd.value)) {
+			createBranch(br, cmd.value);
+		} else {
+			cmContent(br, cmd.value);
 		}
-
-		const workspacePath = workspaceFolder.uri.fsPath;
-
-		// 执行 git commit 命令
-		const { stdout, stderr } = await execAsync(
-			`git commit -m "${commitMessage.replace(/"/g, '\\"')}"`,
-			{ cwd: workspacePath }
-		);
-
-		if (stderr && !stderr.includes('nothing to commit')) {
-			vscode.window.showErrorMessage(`提交失败: ${stderr}`);
-			return;
+	} else if (cmd.id === CMD_ID.create) {
+		createBranch(br, await getValue(cmd.value, '请输入分支名称（例如：feature/AAA-bbb）'));
+	} else if (cmd.id === CMD_ID.reset) {
+		cmReset(git, parseInt(cmd.value) || 1);
+	} else if (cmd.id === CMD_ID.delete) {
+		const availableBranches = getAvailableBranches(git);
+		if (availableBranches.length === 0) {
+			vscode.window.showErrorMessage('无法删除：当前仓库只有一个分支，无法删除');
+		} else {
+			const currentBranch = br.currentBranch;
+			git.gotoTarget(availableBranches[0]);
+			git.deleteBranch(currentBranch);
+			vscode.window.showInformationMessage(`已删除当前分支：${currentBranch}`);
 		}
-
-		vscode.window.showInformationMessage('Commit 提交成功！');
-	} catch (error: any) {
-		const errorMessage = error.message || String(error);
-		vscode.window.showErrorMessage(`提交失败: ${errorMessage}`);
 	}
 }
 
