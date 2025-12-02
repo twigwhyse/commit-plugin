@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 
 interface BranchItem {
   label: string;
-  description?: string;
   branch: string;
   isRemote: boolean;
 }
@@ -38,41 +37,32 @@ export async function cmRebase(git: Git): Promise<void> {
     const currentOriginBranch: BranchItem[] = [];
     if (remoteBranches.includes(currentBranch)) {
       currentOriginBranch.push({
-        label: `$(git-branch) ${currentBranch} (origin)`,
-        description: '当前分支的远程分支',
+        label: `$(git-branch) origin/${currentBranch}`,
         branch: currentBranch,
-        isRemote: true
+        isRemote: true,
       });
     }
 
     // 2. origin 中的周版本分支（最近的5个）
     const weekBranches = remoteBranches
       .filter(branch => branch.includes(postfix))
-      .map(branch => ({
-        branch,
-        time: git.getBranchCommitTime(branch, true)
-      }))
-      .sort((a, b) => b.time - a.time)
+      .map(b => b.trim())
+      .sort((a, b) => b.localeCompare(a))
       .slice(0, 5)
-      .map(item => ({
-        label: `$(calendar) ${item.branch}`,
-        description: '周版本分支',
-        branch: item.branch,
-        isRemote: true
+      .map(branch => ({
+        label: `$(calendar) origin/${branch}`,
+        branch: branch,
+        isRemote: true,
       }));
 
     // 3. 其他本地分支按时间倒序排列（排除当前分支）
     const otherLocalBranches = localBranches
       .filter(branch => branch !== currentBranch)
+      .map(b => b.trim())
+      .sort((a, b) => b.localeCompare(a))
       .map(branch => ({
-        branch,
-        time: git.getBranchCommitTime(branch, false)
-      }))
-      .sort((a, b) => b.time - a.time)
-      .map(item => ({
-        label: `$(git-branch) ${item.branch}`,
-        description: '本地分支',
-        branch: item.branch,
+        label: `$(git-branch) ${branch}`,
+        branch: branch,
         isRemote: false
       }));
 
@@ -84,8 +74,7 @@ export async function cmRebase(git: Git): Promise<void> {
     const otherRemoteBranches = remoteBranches
       .filter(branch => !includedBranches.has(branch))
       .map(branch => ({
-        label: `$(cloud) ${branch} (origin)`,
-        description: '远程分支',
+        label: `$(cloud) origin/${branch}`,
         branch: branch,
         isRemote: true
       }));
