@@ -84,10 +84,7 @@ async function showCommitInput(): Promise<void> {
 		} else {
 			const result = cmContent(br, cmd.value);
 			if (result) {
-				vscode.window.setStatusBarMessage(
-					`✅ 提交成功！${result.hash} - ${result.commitMessage}`,
-					3000
-				);
+				vscode.window.showInformationMessage(`✅ 提交成功！${result.hash} - ${result.commitMessage}`);
 			}
 		}
 	} else if (cmd.id === CMD_ID.create) {
