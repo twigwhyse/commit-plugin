@@ -85,7 +85,7 @@ export async function cmUp(br: Branches, workspacePath: string): Promise<void> {
     
     if (result) {
       vscode.window.showInformationMessage(
-        `✅ 版本升级成功！版本号: ${newVersion}\n提交信息: ${result.hash} - ${result.commitMessage}`
+        `✅ ${result.hash} - ${result.commitMessage}`
       );
     } else {
       vscode.window.showWarningMessage('版本号已升级，但提交可能失败');

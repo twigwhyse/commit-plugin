@@ -118,7 +118,7 @@ export async function cmRebase(git: Git): Promise<void> {
     
     try {
       git.rebase(targetBranch);
-      vscode.window.showInformationMessage(`✅ 已成功 rebase 到 ${selected.branch}`);
+      vscode.window.showInformationMessage(`✅ Rebase: ${selected.branch}`);
     } catch (error: any) {
       vscode.window.showErrorMessage(`❌ Rebase 失败: ${error.message || error}`);
     }
