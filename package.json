@@ -25,7 +25,7 @@
     ]
   },
   "scripts": {
-    "vsix": "vsce package",
+    "build": "vsce package",
     "vscode:prepublish": "pnpm run package",
     "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",
     "watch": "npm-run-all -p watch:*",
