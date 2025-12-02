@@ -28,34 +28,41 @@ type CommitCommand = {
 	value: string;
 }
 
-async function getCommitCommand(input: string): Promise<CommitCommand | undefined> {
-	const str = input.trim();
-	if (!str) {
-		const selectedCommand = await vscode.window.showQuickPick<CommitCommand>(
-			[	
-				{ id: CMD_ID.reset, label: 'git:撤销提交 (reset, rs)', value: '' },
-				{ id: CMD_ID.create, label: 'git:创建分支 (create, cr)', value: '' },
-				{ id: CMD_ID.checkout, label: 'git:切换分支 (checkout, co)', value: '' },
-				{ id: CMD_ID.log, label: 'git:查看提交 (log, lg)', value: '' },
-				{ id: CMD_ID.delete, label: 'git:删除当前分支 (delete, dl)', value: '' },
-				{ id: CMD_ID.rebase, label: 'git:分支 rebase (rebase, rb)', value: '' },
-				{ id: CMD_ID.sprintBranch, label: '小九:创建功能迭代分支 (sprint, sp)', value: '' },
-				{ id: CMD_ID.up, label: '版本:升级版本号 (up, version)', value: '' },
-			],
-			{
-				placeHolder: '请选择要执行的命令',
-				ignoreFocusOut: true,
-			}
-		);
-		return selectedCommand;
-	}
-	
+async function selectCommitCommand(): Promise<CommitCommand | undefined> {
+	const selectedCommand = await vscode.window.showQuickPick<CommitCommand>(
+		[	
+			{ id: CMD_ID.reset, label: 'git:撤销提交 (reset, rs)', value: '' },
+			{ id: CMD_ID.create, label: 'git:创建分支 (create, cr)', value: '' },
+			{ id: CMD_ID.checkout, label: 'git:切换分支 (checkout, co)', value: '' },
+			{ id: CMD_ID.log, label: 'git:查看提交 (log, lg)', value: '' },
+			{ id: CMD_ID.delete, label: 'git:删除当前分支 (delete, dl)', value: '' },
+			{ id: CMD_ID.rebase, label: 'git:分支 rebase (rebase, rb)', value: '' },
+			{ id: CMD_ID.sprintBranch, label: '小九:创建功能迭代分支 (sprint, sp)', value: '' },
+			{ id: CMD_ID.up, label: '版本:升级版本号 (up, version)', value: '' },
+		],
+		{
+			placeHolder: '请选择要执行的命令',
+			ignoreFocusOut: true,
+		}
+	);
+	return selectedCommand;
+}
+
+function generateCommitCommand(str: string): CommitCommand {
 	const [cmd, value] = getMatchCMD(str);
 	return {
 		id: cmd || CMD_ID.commit,
 		label: cmd || '提交',
 		value,
 	};
+}
+
+async function getCommitCommand(input: string): Promise<CommitCommand | undefined> {
+	const str = input.trim();
+	if (!str) {
+		return await selectCommitCommand();
+	}
+	return generateCommitCommand(str);
 }
 
 /**
@@ -122,8 +129,7 @@ async function showCommitInput(): Promise<void> {
 		await cmRebase(git);
 	} else if (cmd.id === CMD_ID.up) {
 		await cmUp(br, workspacePath);
-		const valueCmd = await getCommitCommand(cmd.value);
-		if (!valueCmd) {return;}
+		const valueCmd = generateCommitCommand(cmd.value);
 		if (valueCmd.id === CMD_ID.option) {
 			cmOption(git, valueCmd.value);
 		}
