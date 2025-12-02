@@ -20,6 +20,7 @@ export class Git {
   };
   headCommit = (count = 1) => this.run(`git log -${count} --format=%s`);
   headCommitHash = () => this.run(`git log -1 --format=%h`).trim();
+  getLog = (count = 10) => this.run(`git log -${count} --oneline --decorate`);
   shortStatus = () => this.run('git status -s');
 
   // currentBranch = () => this.run('git rev-parse --abbrev-ref HEAD').trim()

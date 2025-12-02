@@ -6,6 +6,7 @@ export const CMD_ID = {
   delete: 'delete',
   reset: 'reset',
   sprintBranch: 'sprintBranch',
+  log: 'log',
 };
 
 export const CMD_MAP = {
@@ -13,6 +14,7 @@ export const CMD_MAP = {
   [CMD_ID.delete]: ['delete ', 'dl '],
   [CMD_ID.reset]: ['reset ', 'rs '],
   [CMD_ID.sprintBranch]: ['sprint ', 'sp '],
+  [CMD_ID.log]: ['log ', 'lg '],
 };
 
 export function getMatchCMD(input: string) {

@@ -8,6 +8,7 @@ import { Git } from './git/git';
 import { CMD_ID, CMD_MAP, getMatchCMD } from './commit/cm-ids';
 import { cmReset } from './commit/cm-reset';
 import { cmSprintBranch } from './commit/cm-sprint-branch';
+import { cmLog } from './commit/cm-log';
 import { getValue } from './lib/get-value';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -32,6 +33,7 @@ async function getCommitCommand(input: string): Promise<CommitCommand | undefine
 				{ id: CMD_ID.create, label: '创建分支 (create, cr)', value: '' },
 				{ id: CMD_ID.delete, label: '删除当前分支 (delete, dl)', value: '' }, 
 				{ id: CMD_ID.sprintBranch, label: '创建功能迭代分支 (sprint, sp)', value: '' },
+				{ id: CMD_ID.log, label: '查看提交 (log, lg)', value: '' },
 			],
 			{
 				placeHolder: '请选择要执行的命令',
@@ -101,6 +103,9 @@ async function showCommitInput(): Promise<void> {
 		}
 	} else if (cmd.id === CMD_ID.sprintBranch) {
 		cmSprintBranch(git, cmd.value);
+	} else if (cmd.id === CMD_ID.log) {
+		const count = cmd.value ? parseInt(cmd.value) : undefined;
+		cmLog(git, count);
 	}
 }
 
