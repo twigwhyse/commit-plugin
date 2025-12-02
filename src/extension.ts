@@ -11,6 +11,7 @@ import { cmSprintBranch } from './commit/cm-sprint-branch';
 import { cmLog } from './commit/cm-log';
 import { cmCheckout } from './commit/cm-checkout';
 import { cmUp } from './commit/cm-up';
+import { cmRebase } from './commit/cm-rebase';
 import { getValue } from './lib/get-value';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -35,7 +36,8 @@ async function getCommitCommand(input: string): Promise<CommitCommand | undefine
 				{ id: CMD_ID.create, label: 'git:创建分支 (create, cr)', value: '' },
 				{ id: CMD_ID.checkout, label: 'git:切换分支 (checkout, co)', value: '' },
 				{ id: CMD_ID.log, label: 'git:查看提交 (log, lg)', value: '' },
-				{ id: CMD_ID.delete, label: 'git:删除当前分支 (delete, dl)', value: '' }, 
+				{ id: CMD_ID.delete, label: 'git:删除当前分支 (delete, dl)', value: '' },
+				{ id: CMD_ID.rebase, label: 'git:分支 rebase (rebase, rb)', value: '' },
 				{ id: CMD_ID.sprintBranch, label: '小九:创建功能迭代分支 (sprint, sp)', value: '' },
 				{ id: CMD_ID.up, label: '版本:升级版本号 (up, version)', value: '' },
 			],
@@ -118,6 +120,8 @@ async function showCommitInput(): Promise<void> {
 	} else if (cmd.id === CMD_ID.log) {
 		const count = cmd.value ? parseInt(cmd.value) : undefined;
 		cmLog(git, count);
+	} else if (cmd.id === CMD_ID.rebase) {
+		await cmRebase(git);
 	} else if (cmd.id === CMD_ID.up) {
 		await cmUp(br, workspacePath);
 	}

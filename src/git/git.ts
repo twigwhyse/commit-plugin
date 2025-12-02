@@ -128,4 +128,28 @@ export class Git {
   push = () => {
     this.logRun(`git push`);
   };
+
+  // 执行 git fetch
+  fetch = () => {
+    this.logRun('git fetch');
+  };
+
+  // 获取远程分支列表
+  getRemoteBranches = () => {
+    return this.run('git branch -r')
+      .split('\n')
+      .map(branch => branch.replace(/^\*?\s*/, '').replace(/^origin\//, '').trim())
+      .filter(branch => branch && !branch.startsWith('HEAD'));
+  };
+
+  // 获取分支的最后提交时间（Unix 时间戳）
+  getBranchCommitTime = (branchName: string, isRemote = false): number => {
+    try {
+      const ref = isRemote ? `origin/${branchName}` : branchName;
+      const timeStr = this.run(`git log -1 --format=%ct ${ref}`).trim();
+      return parseInt(timeStr) || 0;
+    } catch {
+      return 0;
+    }
+  };
 }
