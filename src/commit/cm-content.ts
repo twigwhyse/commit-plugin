@@ -71,6 +71,5 @@ export function cmContent(git: Git, br: Branches, content: string) {
   terminal.show();
   // 转义消息中的/双引号和反斜杠，使用双引号包裹消息
   const escapedMsg = msg.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-  terminal.sendText(`git commit -m "${escapedMsg}"`);
-  terminal.sendText('git log -1 --format=%h');
+  terminal.sendText(`git commit -m "${escapedMsg}"`); // 执行 git commit 命令, 输出中会提示分支和commit hash
 }
