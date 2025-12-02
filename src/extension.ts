@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { cmContent } from './commit/cm-content';
-import { createBranch, getAvailableBranches, deleteCurrentBranch, isBranchName } from './commit/cm-branch';
+import { createBranch, getAvailableBranches, deleteCurrentBranch, isBranchName, getLatestWeekBranch } from './commit/cm-branch';
 import { Branches } from './git/branches';
 import { Git } from './git/git';
 import { CMD_ID, CMD_MAP, getMatchCMD } from './commit/cm-ids';
@@ -88,18 +88,26 @@ async function showCommitInput(): Promise<void> {
 			}
 		}
 	} else if (cmd.id === CMD_ID.create) {
-		createBranch(br, await getValue(cmd.value, '请输入分支名称（例如：feature/AAA-bbb）'));
+		createBranch(br, await getValue(cmd.value, '请输入分支名称(例如: feature/AAA-bbb)'));
 	} else if (cmd.id === CMD_ID.reset) {
 		cmReset(git, parseInt(cmd.value) || 1);
 	} else if (cmd.id === CMD_ID.delete) {
+		const currentBranch = br.currentBranch;
 		const availableBranches = getAvailableBranches(git);
 		if (availableBranches.length === 0) {
 			vscode.window.showErrorMessage('无法删除：当前仓库只有一个分支，无法删除');
 		} else {
-			const currentBranch = br.currentBranch;
-			git.gotoTarget(availableBranches[0]);
+			// 优先尝试切换到最近的周版本分支
+			const latestWeekBranch = getLatestWeekBranch(git, currentBranch);
+			const targetBranch = latestWeekBranch || availableBranches[0];
+			
+			git.gotoTarget(targetBranch);
 			git.deleteBranch(currentBranch);
-			vscode.window.showInformationMessage(`已删除当前分支：${currentBranch}`);
+			
+			const message = latestWeekBranch 
+				? `已切换到周版本分支 ${targetBranch} 并删除当前分支：${currentBranch}`
+				: `已切换到分支 ${targetBranch} 并删除当前分支：${currentBranch}`;
+			vscode.window.showInformationMessage(message);
 		}
 	} else if (cmd.id === CMD_ID.sprintBranch) {
 		cmSprintBranch(git, cmd.value);

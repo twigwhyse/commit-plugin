@@ -38,6 +38,37 @@ export function getAvailableBranches(git: Git): string[] {
 }
 
 /**
+ * 获取最近的周版本分支（排除当前分支）
+ * @param git Git 实例
+ * @param currentBranch 当前分支名称
+ * @returns 最近的周版本分支，如果没有则返回 null
+ */
+export function getLatestWeekBranch(git: Git, currentBranch: string): string | null {
+  const postfix = '周版本分支';
+  
+  // 如果当前分支包含 '/'，尝试获取相同前缀的周版本分支
+  if (currentBranch.includes('/')) {
+    const prefix = currentBranch.split('/')[0];
+    const weekBranches = git.getBranchesByFixed(prefix + '/', postfix)
+      .filter(branch => branch !== currentBranch); // 排除当前分支
+    if (weekBranches.length > 0) {
+      // 按字典序倒序排序，获取最新的
+      return weekBranches.sort((a, b) => b.localeCompare(a))[0];
+    }
+  }
+  
+  // 如果没有找到同前缀的，尝试获取所有周版本分支（排除当前分支）
+  const allWeekBranches = git.getBranchesByFixed('', postfix)
+    .filter(branch => branch !== currentBranch); // 排除当前分支
+  if (allWeekBranches.length > 0) {
+    // 按字典序倒序排序，获取最新的
+    return allWeekBranches.sort((a, b) => b.localeCompare(a))[0];
+  }
+  
+  return null;
+}
+
+/**
  * 删除当前分支
  * @param git Git 实例
  * @param targetBranch 要切换到的目标分支
