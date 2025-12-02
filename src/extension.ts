@@ -9,6 +9,7 @@ import { CMD_ID, CMD_MAP, getMatchCMD } from './commit/cm-ids';
 import { cmReset } from './commit/cm-reset';
 import { cmSprintBranch } from './commit/cm-sprint-branch';
 import { cmLog } from './commit/cm-log';
+import { cmCheckout } from './commit/cm-checkout';
 import { getValue } from './lib/get-value';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -31,6 +32,7 @@ async function getCommitCommand(input: string): Promise<CommitCommand | undefine
 			[	
 				{ id: CMD_ID.reset, label: '撤销提交 (reset, rs)', value: '' },
 				{ id: CMD_ID.create, label: '创建分支 (create, cr)', value: '' },
+				{ id: CMD_ID.checkout, label: '切换分支 (checkout, co)', value: '' },
 				{ id: CMD_ID.delete, label: '删除当前分支 (delete, dl)', value: '' }, 
 				{ id: CMD_ID.sprintBranch, label: '创建功能迭代分支 (sprint, sp)', value: '' },
 				{ id: CMD_ID.log, label: '查看提交 (log, lg)', value: '' },
@@ -90,6 +92,8 @@ async function showCommitInput(): Promise<void> {
 		}
 	} else if (cmd.id === CMD_ID.create) {
 		createBranch(br, await getValue(cmd.value, '请输入分支名称(例如: feature/AAA-bbb)'));
+	} else if (cmd.id === CMD_ID.checkout) {
+		await cmCheckout(git, cmd.value);
 	} else if (cmd.id === CMD_ID.reset) {
 		cmReset(git, parseInt(cmd.value) || 1);
 	} else if (cmd.id === CMD_ID.delete) {

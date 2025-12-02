@@ -3,6 +3,7 @@ import { splitType } from "../lib/split-type";
 export const CMD_ID = {
   commit: 'commit',
   create: 'create',
+  checkout: 'checkout',
   delete: 'delete',
   reset: 'reset',
   sprintBranch: 'sprintBranch',
@@ -11,6 +12,7 @@ export const CMD_ID = {
 
 export const CMD_MAP = {
   [CMD_ID.create]: ['create ', 'cr '],
+  [CMD_ID.checkout]: ['checkout ', 'co '],
   [CMD_ID.delete]: ['delete ', 'dl '],
   [CMD_ID.reset]: ['reset ', 'rs '],
   [CMD_ID.sprintBranch]: ['sprint ', 'sp '],
