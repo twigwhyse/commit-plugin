@@ -30,12 +30,12 @@ async function getCommitCommand(input: string): Promise<CommitCommand | undefine
 	if (!str) {
 		const selectedCommand = await vscode.window.showQuickPick<CommitCommand>(
 			[	
-				{ id: CMD_ID.reset, label: '撤销提交 (reset, rs)', value: '' },
-				{ id: CMD_ID.create, label: '创建分支 (create, cr)', value: '' },
-				{ id: CMD_ID.checkout, label: '切换分支 (checkout, co)', value: '' },
-				{ id: CMD_ID.delete, label: '删除当前分支 (delete, dl)', value: '' }, 
-				{ id: CMD_ID.sprintBranch, label: '创建功能迭代分支 (sprint, sp)', value: '' },
-				{ id: CMD_ID.log, label: '查看提交 (log, lg)', value: '' },
+				{ id: CMD_ID.reset, label: 'git:撤销提交 (reset, rs)', value: '' },
+				{ id: CMD_ID.create, label: 'git:创建分支 (create, cr)', value: '' },
+				{ id: CMD_ID.checkout, label: 'git:切换分支 (checkout, co)', value: '' },
+				{ id: CMD_ID.log, label: 'git:查看提交 (log, lg)', value: '' },
+				{ id: CMD_ID.delete, label: 'git:删除当前分支 (delete, dl)', value: '' }, 
+				{ id: CMD_ID.sprintBranch, label: '小九:创建功能迭代分支 (sprint, sp)', value: '' },
 			],
 			{
 				placeHolder: '请选择要执行的命令',
