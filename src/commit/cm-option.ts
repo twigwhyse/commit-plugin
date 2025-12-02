@@ -2,20 +2,36 @@ import { Git } from "../git/git";
 import * as vscode from 'vscode';
 
 function optionParse(options: string) {
+  let str = options.trim();
   const optionMap = {
     push: false,
     rebase: false,
     build: false,
   };
-  if (options.includes('push') || options.includes('p')) {
-    optionMap.push = true;
+  function handleOption(key: keyof typeof optionMap) {
+    if (str.includes(key)) {
+      optionMap[key] = true;
+      str = str.replace(key, '').trim();
+    }
   }
-  if (options.includes('rebase') || options.includes('r')) {
-    optionMap.rebase = true;
+  function handleOptionPartialMatch(key: keyof typeof optionMap) {
+    const prefix = key.slice(0, 1);
+    if (prefix && str.includes(prefix)) {
+      optionMap[key] = true;
+      str = str.replace(prefix, '').trim();
+    }
   }
-  if (options.includes('build') || options.includes('b')) {
-    optionMap.build = true;
-  }
+
+  // 全匹配
+  handleOption('push');
+  handleOption('rebase');
+  handleOption('build');
+
+  // 简写匹配
+  handleOptionPartialMatch('push');
+  handleOptionPartialMatch('rebase');
+  handleOptionPartialMatch('build');
+
   return optionMap;
 }
 
