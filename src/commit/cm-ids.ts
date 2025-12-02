@@ -8,6 +8,7 @@ export const CMD_ID = {
   reset: 'reset',
   sprintBranch: 'sprintBranch',
   log: 'log',
+  up: 'up',
 };
 
 export const CMD_MAP = {
@@ -17,6 +18,7 @@ export const CMD_MAP = {
   [CMD_ID.reset]: ['reset ', 'rs '],
   [CMD_ID.sprintBranch]: ['sprint ', 'sp '],
   [CMD_ID.log]: ['log ', 'lg '],
+  [CMD_ID.up]: ['up ', 'version '],
 };
 
 export function getMatchCMD(input: string) {
