@@ -11,8 +11,10 @@ export class Branches {
     }
 
     const currentBranch = this.currentBranch;
-    if(currentBranch.indexOf('refs#') !== -1) {
-      this._redmineId = currentBranch.substring(currentBranch.indexOf('refs#') + 5, currentBranch.indexOf('-'));
+    // 使用正则表达式匹配 refs#数字 格式
+    const match = currentBranch.match(/refs#(\d+)/);
+    if(match && match[1]) {
+      this._redmineId = match[1];
     }
     
     return this._redmineId;
@@ -22,8 +24,8 @@ export class Branches {
     if(this._prefix) {
       return this._prefix;
     }
-    if(this._redmineId) {
-      this._prefix = `refs #${this._redmineId}`;
+    if(this.redmineId) {
+      this._prefix = `refs #${this.redmineId} `;
     }
     return this._prefix;
   }
@@ -68,12 +70,10 @@ export class Branches {
     if (!this.git.hasStaged()) {
       this.git.addAll();
     }
-    while (this.prefix) {
-      if(msg && msg.startsWith(this.prefix)) {
-        break;
-      }
-      msg = this.prefix + ' ' + msg;
-      break;
+    // 如果存在前缀且消息不以该前缀开头，则自动添加前缀
+    const prefix = this.prefix;
+    if(prefix && msg && !msg.startsWith(prefix)) {
+      msg = prefix + ' ' + msg;
     }
     this.git.commit(msg);
     const hash = this.git.headCommitHash();
