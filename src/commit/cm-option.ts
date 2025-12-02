@@ -35,15 +35,41 @@ function optionParse(options: string) {
   return optionMap;
 }
 
-export function cmOption(git: Git, option: string) {
+export async function cmOption(git: Git, option: string) {
   const options = optionParse(option);
+  
   if (options.push) {
-    git.push();
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Git Push',
+        cancellable: false,
+      },
+      async (progress) => {
+        progress.report({ increment: 0, message: '正在推送代码...' });
+        git.push();
+        progress.report({ increment: 100, message: '推送完成' });
+      }
+    );
   }
+  
   if (options.rebase) {
-    git.fetch();
-    git.rebaseOrigin();
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Git Rebase',
+        cancellable: false,
+      },
+      async (progress) => {
+        progress.report({ increment: 0, message: '正在获取远程更新...' });
+        git.fetch();
+        progress.report({ increment: 50, message: '正在 rebase...' });
+        git.rebaseOrigin();
+        progress.report({ increment: 100, message: 'Rebase 完成' });
+      }
+    );
   }
+  
   if (options.build) {
     const terminal = vscode.window.activeTerminal || vscode.window.createTerminal('Git Commit');
     terminal.show();

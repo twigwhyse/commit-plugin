@@ -131,10 +131,10 @@ async function showCommitInput(): Promise<void> {
 		await cmUp(br, workspacePath);
 		const valueCmd = generateCommitCommand(cmd.value);
 		if (valueCmd.id === CMD_ID.option) {
-			cmOption(git, valueCmd.value);
+			await cmOption(git, valueCmd.value);
 		}
 	} else if (cmd.id === CMD_ID.option) {
-		cmOption(git, cmd.value);
+		await cmOption(git, cmd.value);
 	}
 }
 
