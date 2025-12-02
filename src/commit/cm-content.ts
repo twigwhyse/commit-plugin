@@ -21,7 +21,7 @@ const CONTENT_ID = {
 };
 
 const CONTENT_TYPE_MAP: TypeMap = {
-  [CONTENT_ID.add]  : ['[add]', '添加', 'add '],
+  [CONTENT_ID.add]  : ['[add]', '添加', '支持', 'add '],
   [CONTENT_ID.delete]: ['[delete]', '删除', 'delete '],
   [CONTENT_ID.refactor]: ['[refactor]', '重构', 'refactor '],
   [CONTENT_ID.fix]: ['[fix]', '修复', 'fix '],
