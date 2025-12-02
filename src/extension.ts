@@ -86,10 +86,7 @@ async function showCommitInput(): Promise<void> {
 		if (isBranchName(cmd.value)) {
 			createBranch(br, cmd.value);
 		} else {
-			const result = cmContent(br, cmd.value);
-			if (result) {
-				vscode.window.showInformationMessage(`✅ ${result.hash} - ${result.commitMessage}`);
-			}
+			cmContent(git, br, cmd.value);
 		}
 	} else if (cmd.id === CMD_ID.create) {
 		createBranch(br, await getValue(cmd.value, '请输入分支名称(例如: feature/AAA-bbb)'));

@@ -1,4 +1,6 @@
+import * as vscode from 'vscode';
 import { Branches } from "../git/branches";
+import { Git } from "../git/git";
 import { splitType, TypeMap } from "../lib/split-type";
 
 const CONTENT_ID = {
@@ -39,15 +41,36 @@ const CONTENT_TYPE_MAP: TypeMap = {
   [CONTENT_ID.optimize]: ['[optimize]', '优化', 'optimize '],
 };
 
-export function cmContent(br: Branches, content: string): { commitMessage: string; hash: string } | null {
-  if (content.startsWith('[version]')) {
-    return br.autoCommitAtCurrentBranch(content);
+function wrapPrefix(prefix: string, content: string): string {
+  if (prefix && content && !content.startsWith(prefix)) {
+    return prefix + ' ' + content;
   }
+  return content;
+}
 
+function generateCommitMessage(content: string): string {
+  if (content.startsWith('[version]')) {
+    return content;
+  }
   const [cmd, value] = splitType(content, CONTENT_TYPE_MAP);
   if (cmd) {
-    return br.autoCommitAtCurrentBranch(`[${cmd}] ${value}`);
-  } else {
-    return br.autoCommitAtCurrentBranch(content);
+    return `[${cmd.trim()}] ${value.trim()}`;
   }
+  return content;
+}
+
+export function cmContent(git: Git, br: Branches, content: string) {
+  if (!git.hasStaged()) {
+    git.addAll();
+  }
+  const msg = wrapPrefix(br.prefix, generateCommitMessage(content));
+  
+  // 在 terminal 中执行 git commit 命令，以便显示 git hooks 的输出
+  const terminal = vscode.window.activeTerminal || vscode.window.createTerminal('Git Commit');
+
+  terminal.show();
+  // 转义消息中的/双引号和反斜杠，使用双引号包裹消息
+  const escapedMsg = msg.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  terminal.sendText(`git commit -m "${escapedMsg}"`);
+  terminal.sendText('git log -1 --format=%h');
 }
