@@ -10,6 +10,7 @@ export const CMD_ID = {
   log: 'log',
   up: 'up',
   rebase: 'rebase',
+  option: 'option',
 };
 
 export const CMD_MAP = {
@@ -21,6 +22,7 @@ export const CMD_MAP = {
   [CMD_ID.log]: ['log ', 'lg '],
   [CMD_ID.up]: ['up ', 'version '],
   [CMD_ID.rebase]: ['rebase ', 'rb '],
+  [CMD_ID.option]: ['-'],
 };
 
 export function getMatchCMD(input: string) {

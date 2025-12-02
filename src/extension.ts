@@ -13,6 +13,7 @@ import { cmCheckout } from './commit/cm-checkout';
 import { cmUp } from './commit/cm-up';
 import { cmRebase } from './commit/cm-rebase';
 import { getValue } from './lib/get-value';
+import { cmOption } from './commit/cm-option';
 
 export function activate(context: vscode.ExtensionContext) {
 	const commitCommand = vscode.commands.registerCommand('infofe-commit.commit', async () => {
@@ -121,6 +122,8 @@ async function showCommitInput(): Promise<void> {
 		await cmRebase(git);
 	} else if (cmd.id === CMD_ID.up) {
 		await cmUp(br, workspacePath);
+	} else if (cmd.id === CMD_ID.option) {
+		cmOption(git, cmd.value);
 	}
 }
 
