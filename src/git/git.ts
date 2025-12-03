@@ -83,8 +83,7 @@ export class Git {
   };
 
   commit = (str: string) => {
-    this.run(`git commit -m "${str}"`);
-    console.log(`${this.headCommitHash()} ${str}`);
+    return this.run(`git commit -m "${str}"`);
   };
 
   reset = (count = 1) => {

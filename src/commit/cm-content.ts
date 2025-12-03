@@ -64,12 +64,16 @@ export function cmContent(git: Git, br: Branches, content: string) {
     git.addAll();
   }
   const msg = wrapPrefix(br.prefix, generateCommitMessage(content));
-  
-  // 在 terminal 中执行 git commit 命令，以便显示 git hooks 的输出
-  const terminal = vscode.window.activeTerminal || vscode.window.createTerminal('Git Commit');
-
-  terminal.show();
-  // 转义消息中的/双引号和反斜杠，使用双引号包裹消息
-  const escapedMsg = msg.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-  terminal.sendText(`git commit -m "${escapedMsg}"`); // 执行 git commit 命令, 输出中会提示分支和commit hash
+  vscode.window.withProgress({
+    location: vscode.ProgressLocation.Notification,
+    title: `提交：${msg}`,
+    cancellable: false,
+  }, async () => {
+    try {
+      git.commit(msg);
+    } catch (error) {
+      vscode.window.showErrorMessage(`❌ 提交失败: ${error}`);
+    }
+  });
 }
+
