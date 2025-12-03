@@ -2,7 +2,7 @@
   "name": "infofe-commit",
   "displayName": "infofe-commit",
   "description": "git commit helpper",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "engines": {
     "vscode": "^1.100.1"
   },
