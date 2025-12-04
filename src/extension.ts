@@ -28,7 +28,7 @@ async function selectCommitCommand(): Promise<CommitCommand | undefined> {
 	const selectedCommand = await vscode.window.showQuickPick<CommitCommand>(
 		[	
 			{ id: '', label: 'Git 操作', value: '', kind: vscode.QuickPickItemKind.Separator },
-			{ id: CMD_ID.merge, label: 'git:合并分支 (merge, mg)', value: '' },
+			{ id: CMD_ID.merge, label: 'git:合并分支 (merge, mg) [option: -rtp]', value: '' },
 			{ id: CMD_ID.checkoutFrom, label: 'git:从指定分支创建新分支 (checkoutFrom, ck)', value: '' },
 			{ id: CMD_ID.create, label: 'git:创建新分支 (create, cr)', value: '' },
 			{ id: CMD_ID.checkout, label: 'git:切换分支 (checkout, cko)', value: '' },
@@ -42,6 +42,7 @@ async function selectCommitCommand(): Promise<CommitCommand | undefined> {
 			{ id: CMD_ID.option, label: 'Push 到远端分支 (push, -p)', value: OPTIONS_DEFINED.push },
 			{ id: CMD_ID.option, label: '提交完成之后执行构建命令 (build, -b)', value: OPTIONS_DEFINED.build },
 			{ id: CMD_ID.option, label: 'Rebase 的方式同步一次远端分支 (rebase, -r)', value: OPTIONS_DEFINED.rebase },
+			{ id: CMD_ID.option, label: '合并完成之后切换回原分支 (turnBack, -t)', value: OPTIONS_DEFINED.turnBack },
 		],
 		{
 			placeHolder: '请选择要执行的命令',
