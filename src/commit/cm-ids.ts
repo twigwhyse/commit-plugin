@@ -13,6 +13,9 @@ export const CMD_ID = {
   rebase: 'rebase',
   option: 'option',
   merge: 'merge',
+  mergeMaster: 'mergeMaster',
+  mergeWeek: 'mergeWeek',
+  mergeDev: 'mergeDev',
   pull: 'pull',
 };
 
@@ -26,6 +29,9 @@ export const CMD_MAP = {
   [CMD_ID.up]: ['up '],
   [CMD_ID.rebase]: ['rebase ', 'rb '],
   [CMD_ID.merge]: ['merge ', 'mg '],
+  [CMD_ID.mergeMaster]: ['mergeMaster ', 'mgm ', 'merge-master '],
+  [CMD_ID.mergeWeek]: ['mergeWeek ', 'mgw ', 'merge-week '],
+  [CMD_ID.mergeDev]: ['mergeDev ', 'mgd ', 'merge-dev '],
   [CMD_ID.pull]: ['pull ', 'pl '],
 };
 

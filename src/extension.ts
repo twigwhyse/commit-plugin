@@ -17,6 +17,7 @@ import { cmOption, optionParse, OPTIONS_DEFINED } from './commit/cm-option';
 import { cmDelete } from './commit/cm-delete';
 import { cmMerge } from './commit/cm-merge';
 import { cmPull } from './commit/cm-pull';
+import { cmMergeMaster, cmMergeDev, cmMergeWeek } from './commit/cm-quick-merge';
 
 export function activate(context: vscode.ExtensionContext) {
 	const commitCommand = vscode.commands.registerCommand('infofe-commit.commit', async () => {
@@ -31,6 +32,9 @@ async function selectCommitCommand(): Promise<CommitCommand | undefined> {
 			{ id: '', label: 'Git 操作', value: '', kind: vscode.QuickPickItemKind.Separator },
 			{ id: CMD_ID.pull, label: 'git:拉取代码 (pull, pl) [rebase/merge]', value: '' },
 			{ id: CMD_ID.merge, label: 'git:合并分支 (merge, mg) [option: -rtp]', value: '' },
+			{ id: CMD_ID.mergeMaster, label: 'git:快速合并到 master (mergeMaster, mgm) [option: -rtp]', value: '' },
+			{ id: CMD_ID.mergeDev, label: 'git:快速合并到 dev (mergeDev, mgd) [option: -rtp]', value: '' },
+			{ id: CMD_ID.mergeWeek, label: 'git:快速合并到周版本分支 (mergeWeek, mgw) [option: -rtp]', value: '' },
 			{ id: CMD_ID.checkoutFrom, label: 'git:从指定分支创建新分支 (checkoutFrom, ck)', value: '' },
 			{ id: CMD_ID.create, label: 'git:创建新分支 (create, cr)', value: '' },
 			{ id: CMD_ID.checkout, label: 'git:切换分支 (checkout, cko)', value: '' },
@@ -127,6 +131,12 @@ async function showCommitInput(): Promise<void> {
 		}
 	} else if(cmd.id === CMD_ID.merge) {
 		await cmMerge(git, options, cmd.value || '');
+	} else if (cmd.id === CMD_ID.mergeMaster) {
+		await cmMergeMaster(git, options);
+	} else if (cmd.id === CMD_ID.mergeDev) {
+		await cmMergeDev(git, options);
+	} else if (cmd.id === CMD_ID.mergeWeek) {
+		await cmMergeWeek(git, options);
 	} else if (cmd.id === CMD_ID.pull) {
 		await cmPull(git, options, cmd.value);
 	} else if (cmd.id === CMD_ID.option) {
