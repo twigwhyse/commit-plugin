@@ -9,20 +9,26 @@ export interface BranchItem {
 
 export async function smartPickBranch(
   git: Git,
-  placeholder?: string
+  opt?: string | {
+    placeholder?: string;
+    remoteFirst?: boolean;
+  },
 ): Promise<BranchItem | undefined> {
-  // 显示进度提示
-  await vscode.window.withProgress(
-    {
-      location: vscode.ProgressLocation.Notification,
-      title: "正在获取远程分支信息...",
-      cancellable: false,
-    },
-    async () => {
-      // 执行 git fetch
-      git.fetch();
-    }
-  );
+  const options = typeof opt === 'string' ? { placeholder: opt } : opt;
+
+  if (options?.remoteFirst ?? true) {
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: "正在获取远程分支信息...",
+        cancellable: false,
+      },
+      async () => {
+        // 执行 git fetch
+        git.fetch();
+      }
+    );
+  }
 
   const currentBranch = git.currentBranch();
   const localBranches = git.getLocalBranches();
@@ -90,7 +96,7 @@ export async function smartPickBranch(
 
   // 显示分支选择列表
   const selected = await vscode.window.showQuickPick(allBranches, {
-    placeHolder: placeholder ?? '选择分支',
+    placeHolder: options?.placeholder ?? '选择分支',
     ignoreFocusOut: true,
   });
 

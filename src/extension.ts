@@ -2,10 +2,10 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { cmContent } from './commit/cm-content';
-import { createBranch, getAvailableBranches, deleteCurrentBranch, isBranchName, getLatestWeekBranch } from './commit/cm-branch';
+import { createBranch, isBranchName } from './commit/cm-branch';
 import { Branches } from './git/branches';
 import { Git } from './git/git';
-import { CMD_ID, CMD_MAP, getMatchCMD } from './commit/cm-ids';
+import { CMD_ID, CommitCommand, generateCommitCommand } from './commit/cm-ids';
 import { cmReset } from './commit/cm-reset';
 import { cmLog } from './commit/cm-log';
 import { cmCheckout } from './commit/cm-checkout';
@@ -13,7 +13,9 @@ import { cmCheckoutFrom } from './commit/cm-checkout-from';
 import { cmUp } from './commit/cm-up';
 import { cmRebase } from './commit/cm-rebase';
 import { getValue } from './lib/get-value';
-import { cmOption } from './commit/cm-option';
+import { cmOption, optionParse, OPTIONS_DEFINED } from './commit/cm-option';
+import { cmDelete } from './commit/cm-delete';
+import { cmMerge } from './commit/cm-merge';
 
 export function activate(context: vscode.ExtensionContext) {
 	const commitCommand = vscode.commands.registerCommand('infofe-commit.commit', async () => {
@@ -22,17 +24,11 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(commitCommand);
 }
 
-type CommitCommand = {
-	id: string;
-	label: string;
-	value?: string;
-	kind?: vscode.QuickPickItemKind;
-}
-
 async function selectCommitCommand(): Promise<CommitCommand | undefined> {
 	const selectedCommand = await vscode.window.showQuickPick<CommitCommand>(
 		[	
 			{ id: '', label: 'Git 操作', value: '', kind: vscode.QuickPickItemKind.Separator },
+			{ id: CMD_ID.merge, label: 'git:合并分支 (merge, mg)', value: '' },
 			{ id: CMD_ID.checkoutFrom, label: 'git:从指定分支创建新分支 (checkoutFrom, ck)', value: '' },
 			{ id: CMD_ID.create, label: 'git:创建新分支 (create, cr)', value: '' },
 			{ id: CMD_ID.checkout, label: 'git:切换分支 (checkout, cko)', value: '' },
@@ -43,9 +39,9 @@ async function selectCommitCommand(): Promise<CommitCommand | undefined> {
 			{ id: '', label: '版本管理', value: '', kind: vscode.QuickPickItemKind.Separator },
 			{ id: CMD_ID.up, label: '版本:升级版本号d (up, version) [option: -rpb]', value: '' },
 			{ id: '', label: '快捷参数', value: '', kind: vscode.QuickPickItemKind.Separator },
-			{ id: CMD_ID.option, label: 'Push 到远端分支 (push, -p)', value: 'p' },
-			{ id: CMD_ID.option, label: '提交完成之后执行构建命令 (build, -b)', value: 'b' },
-			{ id: CMD_ID.option, label: 'Rebase 的方式同步一次远端分支 (rebase, -r)', value: 'r' },
+			{ id: CMD_ID.option, label: 'Push 到远端分支 (push, -p)', value: OPTIONS_DEFINED.push },
+			{ id: CMD_ID.option, label: '提交完成之后执行构建命令 (build, -b)', value: OPTIONS_DEFINED.build },
+			{ id: CMD_ID.option, label: 'Rebase 的方式同步一次远端分支 (rebase, -r)', value: OPTIONS_DEFINED.rebase },
 		],
 		{
 			placeHolder: '请选择要执行的命令',
@@ -57,15 +53,6 @@ async function selectCommitCommand(): Promise<CommitCommand | undefined> {
 		return undefined;
 	}
 	return selectedCommand;
-}
-
-function generateCommitCommand(str: string): CommitCommand {
-	const [cmd, value] = getMatchCMD(str);
-	return {
-		id: cmd || CMD_ID.commit,
-		label: cmd || '提交',
-		value,
-	};
 }
 
 async function getCommitCommand(input: string): Promise<CommitCommand | undefined> {
@@ -99,7 +86,8 @@ async function showCommitInput(): Promise<void> {
 	});
 
 	if (commitMessage === undefined) {return;}
-	const cmd = await getCommitCommand(commitMessage);
+	const [options, value] = optionParse(commitMessage);
+	const cmd = await getCommitCommand(value);
 	if (!cmd) {return;}
 	if (cmd.id === CMD_ID.commit) {
 		const value = cmd.value || '';
@@ -115,23 +103,7 @@ async function showCommitInput(): Promise<void> {
 	} else if (cmd.id === CMD_ID.reset) {
 		cmReset(git, parseInt(cmd.value || '') || 1);
 	} else if (cmd.id === CMD_ID.delete) {
-		const currentBranch = br.currentBranch;
-		const availableBranches = getAvailableBranches(git);
-		if (availableBranches.length === 0) {
-			vscode.window.showErrorMessage('无法删除：当前仓库只有一个分支，无法删除');
-		} else {
-			// 优先尝试切换到最近的周版本分支
-			const latestWeekBranch = getLatestWeekBranch(git, currentBranch);
-			const targetBranch = latestWeekBranch || availableBranches[0];
-			
-			git.gotoTarget(targetBranch);
-			git.deleteBranch(currentBranch);
-			
-			const message = latestWeekBranch 
-				? `已切换到周版本分支 ${targetBranch} 并删除当前分支：${currentBranch}`
-				: `已切换到分支 ${targetBranch} 并删除当前分支：${currentBranch}`;
-			vscode.window.showInformationMessage(message);
-		}
+		cmDelete(git, br);
 	} else if (cmd.id === CMD_ID.checkoutFrom) {
 		await cmCheckoutFrom(git, cmd.value || '');
 	} else if (cmd.id === CMD_ID.log) {
@@ -141,13 +113,18 @@ async function showCommitInput(): Promise<void> {
 		await cmRebase(git);
 	} else if (cmd.id === CMD_ID.up) {
 		await cmUp(br, workspacePath);
-		const valueCmd = generateCommitCommand(cmd.value || '');
-		if (valueCmd.id === CMD_ID.option) {
-			await cmOption(git, valueCmd.value || '');
+		if (options) {
+			await cmOption(git, options);
 		}
+	} else if(cmd.id === CMD_ID.merge) {
+		await cmMerge(git, options, cmd.value || '');
 	} else if (cmd.id === CMD_ID.option) {
-		await cmOption(git, cmd.value || '');
-	}
+		if (cmd.value) {
+			await cmOption(git, { [cmd.value]: true });
+		}
+	} else if (options) {
+		await cmOption(git, options);
+	} 
 }
 
 // This method is called when your extension is deactivated

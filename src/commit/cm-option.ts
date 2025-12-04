@@ -1,78 +1,130 @@
 import { Git } from "../git/git";
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
-function optionParse(options: string) {
-  let str = options.trim();
-  const optionMap = {
-    push: false,
-    rebase: false,
-    build: false,
-  };
-  function handleOption(key: keyof typeof optionMap) {
-    if (str.includes(key)) {
+export const OPTIONS_DEFINED = {
+  push: "push",
+  rebase: "rebase",
+  build: "build",
+  week: "week",
+  dev: "dev",
+} as const;
+
+export const OPTIONS_LIST = [
+  OPTIONS_DEFINED.push,
+  OPTIONS_DEFINED.rebase,
+  OPTIONS_DEFINED.build,
+  OPTIONS_DEFINED.week,
+  OPTIONS_DEFINED.dev,
+] as const;
+
+export type OPTIONS_KEYS = (typeof OPTIONS_LIST)[number];
+
+export type OPTIONS_MAP = { [key in OPTIONS_KEYS]?: boolean };
+
+export function optionParse(opt: string): [options: null | OPTIONS_MAP, value: string] {
+  const valueList: string[] = [];
+  let options = opt
+    .split(" ")
+    .filter((v) => {
+      if (v.startsWith("-")) {
+        return true;
+      }
+      valueList.push(v);
+      return false;
+    })
+    .map((v) => v.slice(1).trim())
+    .filter((v) => v !== "")
+    .join(" ");
+
+  let optionMap: null | OPTIONS_MAP = null;
+
+  function handleOption(key: OPTIONS_KEYS) {
+    if (options.includes(key)) {
+      if (!optionMap) {
+        optionMap = {};
+      }
       optionMap[key] = true;
-      str = str.replace(key, '').trim();
+      options = options.replace(key, "").trim();
     }
   }
-  function handleOptionPartialMatch(key: keyof typeof optionMap) {
+
+  function handleOptionPartialMatch(key: OPTIONS_KEYS) {
     const prefix = key.slice(0, 1);
-    if (prefix && str.includes(prefix)) {
+    if (prefix && options.includes(prefix)) {
+      if (!optionMap) {
+        optionMap = {};
+      }
       optionMap[key] = true;
-      str = str.replace(prefix, '').trim();
+      options = options.replace(prefix, "").trim();
     }
   }
 
   // 全匹配
-  handleOption('push');
-  handleOption('rebase');
-  handleOption('build');
+  OPTIONS_LIST.forEach((option) => {
+    handleOption(option);
+  });
 
   // 简写匹配
-  handleOptionPartialMatch('push');
-  handleOptionPartialMatch('rebase');
-  handleOptionPartialMatch('build');
+  OPTIONS_LIST.forEach((option) => {
+    handleOptionPartialMatch(option);
+  });
 
-  return optionMap;
+  return [optionMap, valueList.join(" ")];
 }
 
-export async function cmOption(git: Git, option: string) {
-  const options = optionParse(option);
-  
-  if (options.push) {
-    await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: 'Git Push',
-        cancellable: false,
-      },
-      async (progress) => {
-        progress.report({ increment: 0, message: '正在推送代码...' });
-        git.push();
-        progress.report({ increment: 100, message: '推送完成' });
-      }
-    );
+export async function doPush(git: Git) {
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: "Git Push",
+      cancellable: false,
+    },
+    async (progress) => {
+      progress.report({ increment: 0, message: "正在推送代码..." });
+      git.push();
+      progress.report({ increment: 100, message: "推送完成" });
+    }
+  );
+}
+
+export async function doRebase(git: Git) {
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: "Git Rebase",
+      cancellable: false,
+    },
+    async (progress) => {
+      progress.report({ increment: 0, message: "正在获取远程更新..." });
+      git.fetch();
+      progress.report({ increment: 50, message: "正在 rebase..." });
+      git.rebaseOrigin();
+      progress.report({ increment: 100, message: "Rebase 完成" });
+    }
+  );
+}
+
+export async function doBuild(git: Git) {
+  const terminal =
+    vscode.window.activeTerminal || vscode.window.createTerminal("Git Commit");
+  terminal.show();
+
+  // 延迟执行构建命令, 保证终端准备好了，避免吞掉了部分字符
+  setTimeout(() => {
+    terminal.sendText("npm run build");
+  }, 500);
+}
+
+export async function cmOption(git: Git, options: OPTIONS_MAP) {
+  if (options?.push) {
+    await doPush(git);
   }
-  
+
   if (options.rebase) {
-    await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: 'Git Rebase',
-        cancellable: false,
-      },
-      async (progress) => {
-        progress.report({ increment: 0, message: '正在获取远程更新...' });
-        git.fetch();
-        progress.report({ increment: 50, message: '正在 rebase...' });
-        git.rebaseOrigin();
-        progress.report({ increment: 100, message: 'Rebase 完成' });
-      }
-    );
+    await doRebase(git);
   }
-  
+
   if (options.build) {
-    const terminal = vscode.window.activeTerminal || vscode.window.createTerminal('Git Commit');
-    terminal.show();
-    terminal.sendText('npm run build');
+    await doBuild(git);
   }
 }

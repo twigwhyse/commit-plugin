@@ -62,6 +62,15 @@ export class Git {
     this.logRun(`git checkout -b ${to} ${from}`);
   };
 
+  // 创建跟踪远端分支的本地分支
+  checkoutTrackBranch = (remoteBranch: string, localBranch?: string) => {
+    if (localBranch) {
+      this.logRun(`git checkout -b ${localBranch} ${remoteBranch}`);
+    } else {
+      this.logRun(`git checkout --track ${remoteBranch}`);
+    }
+  };
+
   deleteBranch = (v: string) => {
     this.logRun(`git branch -D ${v}`);
   };
@@ -128,9 +137,17 @@ export class Git {
     this.logRun(`git push`);
   };
 
+  merge = (fromBranch: string) => {
+    this.logRun(`git merge ${fromBranch}`);
+  };
+
   // 执行 git fetch
   fetch = () => {
     this.logRun('git fetch');
+  };
+
+  pullRebase = () => {
+    this.logRun('git pull --rebase');
   };
 
   // 获取远程分支列表
