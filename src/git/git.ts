@@ -150,6 +150,18 @@ export class Git {
     this.logRun('git pull --rebase');
   };
 
+  pullMerge = () => {
+    this.logRun('git pull --no-rebase');
+  };
+
+  pull = (strategy: 'rebase' | 'merge' = 'rebase') => {
+    if (strategy === 'rebase') {
+      this.logRun('git pull --rebase');
+    } else {
+      this.logRun('git pull --no-rebase');
+    }
+  };
+
   // 获取远程分支列表
   getRemoteBranches = () => {
     return this.run('git branch -r')

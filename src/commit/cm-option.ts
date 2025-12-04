@@ -8,7 +8,8 @@ export const OPTIONS_DEFINED = {
   week: "week",
   dev: "dev",
   turnBack: "turnBack",
-} as const;
+  merge: "merge",
+};
 
 export const OPTIONS_LIST = [
   OPTIONS_DEFINED.push,
@@ -17,11 +18,14 @@ export const OPTIONS_LIST = [
   OPTIONS_DEFINED.week,
   OPTIONS_DEFINED.dev,
   OPTIONS_DEFINED.turnBack,
-] as const;
+  OPTIONS_DEFINED.merge,
+] as (keyof typeof OPTIONS_DEFINED)[];
 
-export type OPTIONS_KEYS = (typeof OPTIONS_LIST)[number];
+export type OPTIONS_KEYS = keyof typeof OPTIONS_DEFINED;
 
-export type OPTIONS_MAP = { [key in OPTIONS_KEYS]?: boolean };
+export type OPTIONS_MAP = {
+  [key in keyof typeof OPTIONS_DEFINED]?: boolean;
+}
 
 export function optionParse(opt: string): [options: null | OPTIONS_MAP, value: string] {
   const valueList: string[] = [];

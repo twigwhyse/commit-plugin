@@ -16,6 +16,7 @@ import { getValue } from './lib/get-value';
 import { cmOption, optionParse, OPTIONS_DEFINED } from './commit/cm-option';
 import { cmDelete } from './commit/cm-delete';
 import { cmMerge } from './commit/cm-merge';
+import { cmPull } from './commit/cm-pull';
 
 export function activate(context: vscode.ExtensionContext) {
 	const commitCommand = vscode.commands.registerCommand('infofe-commit.commit', async () => {
@@ -25,9 +26,10 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 async function selectCommitCommand(): Promise<CommitCommand | undefined> {
-	const selectedCommand = await vscode.window.showQuickPick<CommitCommand>(
+		const selectedCommand = await vscode.window.showQuickPick<CommitCommand>(
 		[	
 			{ id: '', label: 'Git 操作', value: '', kind: vscode.QuickPickItemKind.Separator },
+			{ id: CMD_ID.pull, label: 'git:拉取代码 (pull, pl) [rebase/merge]', value: '' },
 			{ id: CMD_ID.merge, label: 'git:合并分支 (merge, mg) [option: -rtp]', value: '' },
 			{ id: CMD_ID.checkoutFrom, label: 'git:从指定分支创建新分支 (checkoutFrom, ck)', value: '' },
 			{ id: CMD_ID.create, label: 'git:创建新分支 (create, cr)', value: '' },
@@ -119,6 +121,8 @@ async function showCommitInput(): Promise<void> {
 		}
 	} else if(cmd.id === CMD_ID.merge) {
 		await cmMerge(git, options, cmd.value || '');
+	} else if (cmd.id === CMD_ID.pull) {
+		await cmPull(git, options, cmd.value);
 	} else if (cmd.id === CMD_ID.option) {
 		if (cmd.value) {
 			await cmOption(git, { [cmd.value]: true });
