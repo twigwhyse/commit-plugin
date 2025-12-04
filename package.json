@@ -26,8 +26,7 @@
     "keybindings": [
       {
         "command": "infofe-commit.commit",
-        "key": "alt+m",
-        "when": "editorTextFocus || editorFocus || terminalFocus"
+        "key": "ctrl+m ctrl+m"
       }
     ]
   },

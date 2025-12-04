@@ -4,7 +4,7 @@ import { getValue } from "../lib/get-value";
 import { smartPickBranch } from "./smart-pick-branch";
 
 export async function cmCheckoutFrom(git: Git, defaultTargetBranch: string) {
-    const selected = await smartPickBranch(git);
+    const selected = await smartPickBranch(git, '选择基座分支');
     if (!selected) {return;}
     const targetBranch = await getValue(defaultTargetBranch, '目标分支');
     if (!targetBranch) {return;}

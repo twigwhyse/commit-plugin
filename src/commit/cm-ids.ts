@@ -15,12 +15,12 @@ export const CMD_ID = {
 
 export const CMD_MAP = {
   [CMD_ID.create]: ['create ', 'cr '],
-  [CMD_ID.checkout]: ['checkout ', 'ck '],
-  [CMD_ID.checkoutFrom]: ['checkoutFrom ', 'ckf '],
+  [CMD_ID.checkout]: ['checkout ', 'cko '],
+  [CMD_ID.checkoutFrom]: ['checkoutFrom ', 'ck '],
   [CMD_ID.delete]: ['delete ', 'dl '],
   [CMD_ID.reset]: ['reset ', 'rs '],
   [CMD_ID.log]: ['log ', 'lg '],
-  [CMD_ID.up]: ['up ', 'version '],
+  [CMD_ID.up]: ['up '],
   [CMD_ID.rebase]: ['rebase ', 'rb '],
   [CMD_ID.option]: ['-'],
 };

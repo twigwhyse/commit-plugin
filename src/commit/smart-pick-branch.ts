@@ -8,7 +8,8 @@ export interface BranchItem {
 }
 
 export async function smartPickBranch(
-  git: Git
+  git: Git,
+  placeholder?: string
 ): Promise<BranchItem | undefined> {
   // 显示进度提示
   await vscode.window.withProgress(
@@ -89,7 +90,7 @@ export async function smartPickBranch(
 
   // 显示分支选择列表
   const selected = await vscode.window.showQuickPick(allBranches, {
-    placeHolder: `选择要 rebase 到当前分支 ${currentBranch} 的目标分支`,
+    placeHolder: placeholder ?? '选择分支',
     ignoreFocusOut: true,
   });
 
