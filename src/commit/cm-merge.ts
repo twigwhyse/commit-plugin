@@ -66,4 +66,12 @@ export async function cmMerge(git: Git, options: OPTIONS_MAP | null, defaultTarg
     }, async () => {
         git.merge(currentBranch);
     });
+
+    if (options?.push) {
+        git.push();
+    }
+
+    if (options?.turnBack) {
+        git.gotoTarget(currentBranch);
+    }
 }
