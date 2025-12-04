@@ -36,7 +36,7 @@ async function selectCommitCommand(): Promise<CommitCommand | undefined> {
 			{ id: CMD_ID.checkoutFrom, label: 'git:从指定分支创建新分支 (checkoutFrom, ck)', value: '' },
 			{ id: CMD_ID.create, label: 'git:创建新分支 (create, cr)', value: '' },
 			{ id: CMD_ID.checkout, label: 'git:切换分支 (checkout, cko)', value: '' },
-			{ id: CMD_ID.rebase, label: 'git:分支 rebase (rebase, rb)', value: '' },
+			{ id: CMD_ID.rebase, label: 'git:分支变基 (rebase, rb)', value: '' },
 			{ id: CMD_ID.delete, label: 'git:删除当前分支 (delete, dl)', value: '' },
 			{ id: CMD_ID.log, label: 'git:查看提交 (log, lg)', value: '' },
 			{ id: CMD_ID.reset, label: 'git:撤销提交 (reset, rs)', value: '' },
