@@ -12,6 +12,7 @@ import { OPTIONS_MAP, cmOption } from "./cm-option";
  * 支持 options:
  *   -p, -push: 拉取后推送到远端
  *   -b, -build: 拉取后执行构建
+ *   -n, -name: 复制当前分支的名字到剪贴板
  */
 export async function cmPull(git: Git, options: OPTIONS_MAP | null, strategy?: string): Promise<void> {
   let pullStrategy: 'rebase' | 'merge' = 'rebase';

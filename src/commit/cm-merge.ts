@@ -1,7 +1,7 @@
 import { Git } from "../git/git";
 import * as vscode from 'vscode';
 import { smartPickBranch } from "./smart-pick-branch";
-import { OPTIONS_MAP } from "./cm-option";
+import { doName, OPTIONS_MAP } from "./cm-option";
 
 export async function cmMerge(git: Git, options: OPTIONS_MAP | null, defaultTargetBranch: string) {
     let targetBranch = defaultTargetBranch;
@@ -73,5 +73,9 @@ export async function cmMerge(git: Git, options: OPTIONS_MAP | null, defaultTarg
 
     if (options?.turnBack) {
         git.gotoTarget(currentBranch);
+    }
+
+    if (options?.name) {
+        await doName(git);
     }
 }

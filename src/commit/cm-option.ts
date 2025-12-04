@@ -9,6 +9,7 @@ export const OPTIONS_DEFINED = {
   dev: "dev",
   turnBack: "turnBack",
   merge: "merge",
+  name: "name",
 };
 
 export const OPTIONS_LIST = [
@@ -19,6 +20,7 @@ export const OPTIONS_LIST = [
   OPTIONS_DEFINED.dev,
   OPTIONS_DEFINED.turnBack,
   OPTIONS_DEFINED.merge,
+  OPTIONS_DEFINED.name,
 ] as (keyof typeof OPTIONS_DEFINED)[];
 
 export type OPTIONS_KEYS = keyof typeof OPTIONS_DEFINED;
@@ -121,6 +123,15 @@ export async function doBuild(git: Git) {
   }, 500);
 }
 
+
+export async function doName(git: Git) {
+  const branchName = git.currentBranch();
+  if (branchName) {
+    vscode.env.clipboard.writeText(branchName);
+    vscode.window.showInformationMessage(`已复制分支名字: ${branchName}`);
+  }
+}
+
 export async function cmOption(git: Git, options: OPTIONS_MAP) {
   if (options?.push) {
     await doPush(git);
@@ -132,5 +143,9 @@ export async function cmOption(git: Git, options: OPTIONS_MAP) {
 
   if (options.build) {
     await doBuild(git);
+  }
+
+  if (options.name) {
+    await doName(git);
   }
 }

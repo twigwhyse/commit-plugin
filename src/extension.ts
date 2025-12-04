@@ -45,6 +45,7 @@ async function selectCommitCommand(): Promise<CommitCommand | undefined> {
 			{ id: CMD_ID.option, label: '提交完成之后执行构建命令 (build, -b)', value: OPTIONS_DEFINED.build },
 			{ id: CMD_ID.option, label: 'Rebase 的方式同步一次远端分支 (rebase, -r)', value: OPTIONS_DEFINED.rebase },
 			{ id: CMD_ID.option, label: '合并完成之后切换回原分支 (turnBack, -t)', value: OPTIONS_DEFINED.turnBack },
+			{ id: CMD_ID.option, label: '复制当前分支的名字到剪贴板 (name, -n)', value: OPTIONS_DEFINED.name },
 		],
 		{
 			placeHolder: '请选择要执行的命令',
