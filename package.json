@@ -2,7 +2,7 @@
   "name": "infofe-commit",
   "displayName": "infofe-commit",
   "description": "git commit helpper",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "engines": {
     "vscode": "^1.100.1"
   },
@@ -26,7 +26,8 @@
     "keybindings": [
       {
         "command": "infofe-commit.commit",
-        "key": "alt+m"
+        "key": "alt+m",
+        "when": "editorTextFocus || editorFocus || terminalFocus"
       }
     ]
   },
