@@ -7,9 +7,9 @@ import { Branches } from './git/branches';
 import { Git } from './git/git';
 import { CMD_ID, CMD_MAP, getMatchCMD } from './commit/cm-ids';
 import { cmReset } from './commit/cm-reset';
-import { cmSprintBranch } from './commit/cm-sprint-branch';
 import { cmLog } from './commit/cm-log';
 import { cmCheckout } from './commit/cm-checkout';
+import { cmCheckoutFrom } from './commit/cm-checkout-from';
 import { cmUp } from './commit/cm-up';
 import { cmRebase } from './commit/cm-rebase';
 import { getValue } from './lib/get-value';
@@ -25,26 +25,37 @@ export function activate(context: vscode.ExtensionContext) {
 type CommitCommand = {
 	id: string;
 	label: string;
-	value: string;
+	value?: string;
+	kind?: vscode.QuickPickItemKind;
 }
 
 async function selectCommitCommand(): Promise<CommitCommand | undefined> {
 	const selectedCommand = await vscode.window.showQuickPick<CommitCommand>(
 		[	
+			{ id: '', label: 'Git 操作', value: '', kind: vscode.QuickPickItemKind.Separator },
 			{ id: CMD_ID.reset, label: 'git:撤销提交 (reset, rs)', value: '' },
 			{ id: CMD_ID.create, label: 'git:创建分支 (create, cr)', value: '' },
-			{ id: CMD_ID.checkout, label: 'git:切换分支 (checkout, co)', value: '' },
+			{ id: CMD_ID.checkout, label: 'git:切换分支 (checkout, ck)', value: '' },
+			{ id: CMD_ID.checkoutFrom, label: 'git:从指定分支切换 (checkoutFrom, ckf)', value: '' },
 			{ id: CMD_ID.log, label: 'git:查看提交 (log, lg)', value: '' },
 			{ id: CMD_ID.delete, label: 'git:删除当前分支 (delete, dl)', value: '' },
 			{ id: CMD_ID.rebase, label: 'git:分支 rebase (rebase, rb)', value: '' },
-			{ id: CMD_ID.sprintBranch, label: '小九:创建功能迭代分支 (sprint, sp)', value: '' },
-			{ id: CMD_ID.up, label: '版本:升级版本号 (up, version)', value: '' },
+			{ id: '', label: '版本管理', value: '', kind: vscode.QuickPickItemKind.Separator },
+			{ id: CMD_ID.up, label: '版本:升级版本号d (up, version) [option: -rpb]', value: '' },
+			{ id: '', label: '快捷参数', value: '', kind: vscode.QuickPickItemKind.Separator },
+			{ id: CMD_ID.option, label: 'Push 到远端分支 (push, -p)', value: 'p' },
+			{ id: CMD_ID.option, label: '提交完成之后执行构建命令 (build, -b)', value: 'b' },
+			{ id: CMD_ID.option, label: 'Rebase 的方式同步一次远端分支 (rebase, -r)', value: 'r' },
 		],
 		{
 			placeHolder: '请选择要执行的命令',
 			ignoreFocusOut: true,
 		}
 	);
+	// 过滤掉分隔符，确保只返回有效的命令
+	if (selectedCommand && selectedCommand.kind === vscode.QuickPickItemKind.Separator) {
+		return undefined;
+	}
 	return selectedCommand;
 }
 
@@ -91,17 +102,18 @@ async function showCommitInput(): Promise<void> {
 	const cmd = await getCommitCommand(commitMessage);
 	if (!cmd) {return;}
 	if (cmd.id === CMD_ID.commit) {
-		if (isBranchName(cmd.value)) {
-			createBranch(br, cmd.value);
+		const value = cmd.value || '';
+		if (isBranchName(value)) {
+			createBranch(br, value);
 		} else {
-			cmContent(git, br, cmd.value);
+			cmContent(git, br, value);
 		}
 	} else if (cmd.id === CMD_ID.create) {
-		createBranch(br, await getValue(cmd.value, '请输入分支名称(例如: feature/AAA-bbb)'));
+		createBranch(br, await getValue(cmd.value || '', '请输入分支名称(例如: feature/AAA-bbb)'));
 	} else if (cmd.id === CMD_ID.checkout) {
-		await cmCheckout(git, cmd.value);
+		await cmCheckout(git, cmd.value || '');
 	} else if (cmd.id === CMD_ID.reset) {
-		cmReset(git, parseInt(cmd.value) || 1);
+		cmReset(git, parseInt(cmd.value || '') || 1);
 	} else if (cmd.id === CMD_ID.delete) {
 		const currentBranch = br.currentBranch;
 		const availableBranches = getAvailableBranches(git);
@@ -120,8 +132,8 @@ async function showCommitInput(): Promise<void> {
 				: `已切换到分支 ${targetBranch} 并删除当前分支：${currentBranch}`;
 			vscode.window.showInformationMessage(message);
 		}
-	} else if (cmd.id === CMD_ID.sprintBranch) {
-		cmSprintBranch(git, cmd.value);
+	} else if (cmd.id === CMD_ID.checkoutFrom) {
+		await cmCheckoutFrom(git, cmd.value || '');
 	} else if (cmd.id === CMD_ID.log) {
 		const count = cmd.value ? parseInt(cmd.value) : undefined;
 		cmLog(git, count);
@@ -129,12 +141,12 @@ async function showCommitInput(): Promise<void> {
 		await cmRebase(git);
 	} else if (cmd.id === CMD_ID.up) {
 		await cmUp(br, workspacePath);
-		const valueCmd = generateCommitCommand(cmd.value);
+		const valueCmd = generateCommitCommand(cmd.value || '');
 		if (valueCmd.id === CMD_ID.option) {
-			await cmOption(git, valueCmd.value);
+			await cmOption(git, valueCmd.value || '');
 		}
 	} else if (cmd.id === CMD_ID.option) {
-		await cmOption(git, cmd.value);
+		await cmOption(git, cmd.value || '');
 	}
 }
 
