@@ -91,6 +91,11 @@ async function showCommitInput(): Promise<void> {
 
 	if (commitMessage === undefined) {return;}
 	const [options, value] = optionParse(commitMessage);
+	if (!value && options) {
+		await cmOption(git, options);
+		return;
+	}
+	
 	const cmd = await getCommitCommand(value);
 	if (!cmd) {return;}
 	if (cmd.id === CMD_ID.commit && cmd.value) {
