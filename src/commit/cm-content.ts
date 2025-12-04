@@ -60,7 +60,7 @@ function generateCommitMessage(content: string): string {
   return content;
 }
 
-export function cmContent(git: Git, br: Branches, content: string, options: OPTIONS_MAP) {
+export function cmContent(git: Git, br: Branches, content: string, options?: null | OPTIONS_MAP) {
   if (!git.hasStaged()) {
     git.addAll();
   }

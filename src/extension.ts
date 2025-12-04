@@ -90,12 +90,12 @@ async function showCommitInput(): Promise<void> {
 	const [options, value] = optionParse(commitMessage);
 	const cmd = await getCommitCommand(value);
 	if (!cmd) {return;}
-	if (cmd.id === CMD_ID.commit) {
-		const value = cmd.value || '';
-		if (isBranchName(value)) {
-			createBranch(br, value);
+	if (cmd.id === CMD_ID.commit && cmd.value) {
+		const cmdValue = cmd.value || '';
+		if (isBranchName(cmdValue)) {
+			createBranch(br, cmdValue);
 		} else {
-			cmContent(git, br, value);
+			cmContent(git, br, cmdValue, options);
 		}
 	} else if (cmd.id === CMD_ID.create) {
 		createBranch(br, await getValue(cmd.value || '', '请输入分支名称(例如: feature/AAA-bbb)'));
