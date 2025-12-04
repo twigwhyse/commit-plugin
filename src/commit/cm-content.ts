@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { Branches } from "../git/branches";
 import { Git } from "../git/git";
 import { splitType, TypeMap } from "../lib/split-type";
+import { OPTIONS_MAP } from './cm-option';
 
 const CONTENT_ID = {
   add: 'add',
@@ -59,7 +60,7 @@ function generateCommitMessage(content: string): string {
   return content;
 }
 
-export function cmContent(git: Git, br: Branches, content: string) {
+export function cmContent(git: Git, br: Branches, content: string, options: OPTIONS_MAP) {
   if (!git.hasStaged()) {
     git.addAll();
   }
@@ -71,6 +72,9 @@ export function cmContent(git: Git, br: Branches, content: string) {
   }, async () => {
     try {
       git.commit(msg);
+      if (options?.push) {
+        git.push();
+      }
     } catch (error) {
       vscode.window.showErrorMessage(`❌ 提交失败: ${error}`);
     }
